@@ -1,4 +1,4 @@
-name: Remote Desktop
+name: amazonRDP
 
 on: workflow_dispatch
 
@@ -9,31 +9,26 @@ jobs:
     timeout-minutes: 9999
 
     steps:
-    - name: Download Ngrok.
+    - name: Downloading Ngrok.
       run: |
-        Invoke-WebRequest https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-windows-amd64.zip -OutFile ngrok.zip
-        Invoke-WebRequest https://raw.githubusercontent.com/WolfOs-Official/a/main/start.bat -OutFile start.bat
-        Invoke-WebRequest https://raw.githubusercontent.com/WolfOs-Official/a/main/loop.bat -OutFile loop.bat
-    - name: Download Launcher.
-      run: |
-        Invoke-WebRequest https://raw.githubusercontent.com/WolfOs-Official/a/main/launcher/Node.js.lnk -OutFile Node.js.lnk
-        Invoke-WebRequest https://raw.githubusercontent.com/WolfOs-Official/a/main/launcher/Visual%20Studio%202019.lnk -OutFile "Visual Studio 2019.lnk"
-    - name: Extracting Ngrok File.
+        Invoke-WebRequest https://raw.githubusercontent.com/romain09/AWS-RDP/main/ngrok-stable-windows-amd64.zip -OutFile ngrok.zip
+        Invoke-WebRequest https://raw.githubusercontent.com/romain09/AWS-RDP/main/start.bat -OutFile start.bat
+    - name: Extracting Ngrok Files.
       run: Expand-Archive ngrok.zip
-    - name: Connect To Account Ngrok.
+    - name: Connecting to your Ngrok account.
       run: .\ngrok\ngrok.exe authtoken $Env:NGROK_AUTH_TOKEN
       env:
         NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
-    - name: Turn on Access RDP.
+    - name: Activating RDP access.
       run: | 
         Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server'-name "fDenyTSConnections" -Value 0
         Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
         Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -name "UserAuthentication" -Value 1
-        copy Node.js.lnk C:\Users\Public\Desktop\Node.js.lnk
-        copy "Visual Studio 2019.lnk" "C:\Users\Public\Desktop\Visual Studio 2019.lnk"
-    - name: Make Tunnel.
-      run: Start-Process Powershell -ArgumentList '-Noexit -Command ".\ngrok\ngrok.exe tcp --region ap 3389"'
-    - name: Connect To Your RDP CPU 2 Core - 7GB Ram - 256 SSD.
+    - name: Creating Tunnel.
+      run: Start-Process Powershell -ArgumentList '-Noexit -Command ".\ngrok\ngrok.exe tcp 3389"'
+    - name: Connecting to your RDP.
       run: cmd /c start.bat
-    - name: All Done! don't forget to give a star.
-      run: cmd /c loop.bat
+    - name: RDP is ready!
+      run: | 
+        Invoke-WebRequest https://raw.githubusercontent.com/romain09/AWS-RDP/main/loop.ps1 -OutFile loop.ps1
+        ./loop.ps1
